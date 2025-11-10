@@ -8,11 +8,6 @@ FEMALE_FIRST = ["Laura", "Sanna", "Veera", "Aino", "Noora", "Emma", "Sara", "Hel
 LAST_NAMES = ["Virtanen", "Korhonen", "Laine", "Heikkinen", "Mäkinen", "Hämäläinen", "Koskinen", "Järvinen"]
 
 SPEED_OPTIONS = [(30,30), (60,60), (120,120), (180,180), (240,240), (30,300)]
-PROGRAM_TYPES = [
-    ("isokin. ballistinen kons/kons", 63),
-    ("isokin. ballistinen eks/eks", 66),
-    ("isokin. ballistinen CPM/eks", 208)
-]
 
 def pick_names(content: str):
     sex_line = next((l for l in content.splitlines() if l.startswith("subject sex")), "")
@@ -39,6 +34,14 @@ def detect_original_side(content: str):
         return 1  # fallback: left
     return int(m.group(1))  # 1 = left, 0 = right
 
+def choose_program_type(speed1, speed2):
+    if speed1 == 30 and speed2 == 300:
+        return ("isokin. ballistinen CPM/eks", 208)
+    elif speed1 == speed2 == 30:
+        return ("isokin. ballistinen eks/eks", 66)
+    else:
+        return ("isokin. ballistinen kons/kons", 63)
+
 def per_copy_meta(session_meta, index, original_content):
     dt = session_meta["start"] + timedelta(minutes=10 * (index-1))
     time = dt.strftime("%H.%M.%S")
@@ -50,7 +53,7 @@ def per_copy_meta(session_meta, index, original_content):
     side_text = "right" if side_code == 0 else "left"
 
     sp1, sp2 = random.choice(SPEED_OPTIONS)
-    program_text, program_code = random.choice(PROGRAM_TYPES)
+    program_text, program_code = choose_program_type(sp1, sp2)
 
     return {
         "first_name": session_meta["first"],
